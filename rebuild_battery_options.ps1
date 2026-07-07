@@ -12,12 +12,12 @@
 param([switch]$Quiet)
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 function Log($m) { if (-not $Quiet) { Write-Host $m } else { Write-Output $m } }
-$dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
+$dataDir = Join-Path $PSScriptRoot "data"
 $gw = "https://api-gateway.accentry.com"
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
 
 # --- baglantilar (dedupe) ---
-$links = Import-Csv "$dataDir\bike_battery_links.csv" | Where-Object { $_.tur -eq 'Batteries' } | Sort-Object bike_sku, item_sku -Unique
+$links = Import-Csv "$dataDir/bike_battery_links.csv" | Where-Object { $_.tur -eq 'Batteries' } | Sort-Object bike_sku, item_sku -Unique
 $arts = @($links.item_sku | Select-Object -Unique)
 Log "baglanti: $($links.Count) | bisiklet: $((@($links.bike_sku | Select-Object -Unique)).Count) | aku makalesi: $($arts.Count)"
 
@@ -180,5 +180,5 @@ for ($i = 0; $i -lt $pending.Count; $i += 25) {
     } catch { $err++; Log "[HATA] parti $i : $($_.Exception.Message)" }
     Start-Sleep -Milliseconds 600
 }
-if ($logRows.Count) { $logRows | Export-Csv "$dataDir\aku_rebuild_log.csv" -NoTypeInformation -Encoding utf8 }
+if ($logRows.Count) { $logRows | Export-Csv "$dataDir/aku_rebuild_log.csv" -NoTypeInformation -Encoding utf8 }
 Log "DONE. yazilan metafield: $ok | hata partisi: $err | log: data\aku_rebuild_log.csv"

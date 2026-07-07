@@ -1,8 +1,8 @@
-# GUNLUK STOK SENKRONU: Kruitbosch + Accell -> Shopify
+﻿# GUNLUK STOK SENKRONU: Kruitbosch + Accell -> Shopify
 # Fiyatlara DOKUNMAZ. Sadece stok adedi ve aktif/taslak durumunu gunceller.
 # Gorev Zamanlayici tarafindan her gun calistirilir; elle de calistirilabilir.
 $ErrorActionPreference = 'Continue'
-$baseDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle"
+$baseDir = $PSScriptRoot
 $logDir = Join-Path $baseDir "logs"
 New-Item -ItemType Directory -Force $logDir | Out-Null
 $log = Join-Path $logDir ("sync_" + (Get-Date -Format "yyyyMMdd_HHmm") + ".log")
@@ -41,7 +41,7 @@ try {
     L "kruitbosch: $($supplierQty.Count) stok kaydi"
     # C-kod aksesuarlar (Cortina aku/lader urunleri) - bunlar IsBike=true sorgusuna girmez
     try {
-        $ccPath = Join-Path $baseDir "data\kruitbosch_ccode_katalog.csv"
+        $ccPath = Join-Path $baseDir "data/kruitbosch_ccode_katalog.csv"
         if (Test-Path $ccPath) {
             $cc = @((Import-Csv $ccPath).code | Where-Object { $_ })
             if ($cc.Count) {
@@ -86,7 +86,7 @@ try {
     $atok = (Invoke-RestMethod -Method Post -Uri "https://api-gateway.accentry.com/authorize" -Body $ab -ContentType 'application/json' -TimeoutSec 30).result.bearer_token
     $ah = @{ Authentication = "Bearer $atok"; accept = "application/json"; "X-version" = "2.0" }
     $accSkus = @()
-    foreach ($f in @("data\accentry_stok.csv", "data\battery_catalog.csv")) {
+    foreach ($f in @("data/accentry_stok.csv", "data/battery_catalog.csv")) {
         $p = Join-Path $baseDir $f
         if (Test-Path $p) { $accSkus += (Import-Csv $p | ForEach-Object { "$($_.sku)".Trim() }) }
     }

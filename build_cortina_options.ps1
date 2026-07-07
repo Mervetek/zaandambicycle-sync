@@ -7,14 +7,14 @@
 param([switch]$Quiet)
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 function Log($m) { if (-not $Quiet) { Write-Host $m } else { Write-Output $m } }
-$dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
+$dataDir = Join-Path $PSScriptRoot "data"
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
 $kUser = $env:KRUITBOSCH_USERNAME; $kPass = $env:KRUITBOSCH_PASSWORD
 $pair = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes("${kUser}:${kPass}"))
 $kh = @{ Authorization = "Basic $pair" }
 
-$plan = Import-Csv "$dataDir\cortina_secici_plan.csv" | Where-Object { $_.magazada -ne 'YOK' -and $_.accu_seti }
-$kat = Import-Csv "$dataDir\kruitbosch_ccode_katalog.csv"
+$plan = Import-Csv "$dataDir/cortina_secici_plan.csv" | Where-Object { $_.magazada -ne 'YOK' -and $_.accu_seti }
+$kat = Import-Csv "$dataDir/kruitbosch_ccode_katalog.csv"
 $ccodes = @($kat.code)
 Log "plan bisikleti: $($plan.Count) | C-kod: $($ccodes.Count)"
 
