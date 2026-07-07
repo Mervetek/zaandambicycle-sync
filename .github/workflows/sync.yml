@@ -2,7 +2,9 @@ name: Zaandam stok senkron
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 16,17,18,19,20 * * *'   # PIK: NL 18-22, saat basi
+    - cron: '0 6,9,12,14 * * *'         # gunduz: NL 08,11,14,16
+    - cron: '0 2 * * *'                 # gece: NL ~04
   workflow_dispatch: {}
 
 permissions:
