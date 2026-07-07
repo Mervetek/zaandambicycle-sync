@@ -2,6 +2,7 @@
 # Amac: yeni bir bisiklet seciciSIZ kalirsa MUSTERI bulmadan SEN gor. Hicbir sey degistirmez; rapor yazar.
 # Siniflar: [GERCEK BOSLUK] aksiyon gerek | [BILINCLI] E-Lett paket / NO-BATT / sabit-aku (aksiyon yok).
 # daily_sync/health'e eklenebilir. Cortina auto-map RISKLI oldugu icin (API uyumluluk yok) burada TAHMIN yapilmaz - sadece isaretlenir.
+param([switch]$FailOnGap)   # workflow'da: GERCEK boşluk varsa exit 1 (adim fail -> GitHub e-posta atar)
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $PSScriptRoot "data"
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
@@ -59,3 +60,9 @@ Write-Output "[BILINCLI] seciciSIZ dogru (aksiyon YOK): $($intentional.Count)"
 $intentional | Group-Object sebep | ForEach-Object { Write-Output ("   {0}: {1}" -f $_.Name, $_.Count) }
 Write-Output ""
 Write-Output "rapor: data/eksik_secici_raporu.csv"
+
+# workflow alarmi: gercek boşluk varsa adim FAIL (GitHub e-posta atar)
+if ($FailOnGap -and $real.Count -gt 0) {
+    Write-Output "::error::$($real.Count) GERCEK secici boslugu var - seciciSIZ e-bike(ler): $(($real.sku) -join ', ')"
+    exit 1
+}
