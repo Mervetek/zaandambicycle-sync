@@ -1,0 +1,28 @@
+# ===== KIMLIKLER - ASLA COMMIT'LENMEZ =====
+sync.env
+*.env
+.env
+*.secret
+
+# ===== Loglar (her kosuda uretilir) =====
+logs/
+*.log
+
+# ===== Tema yedekleri ve gecici tema dosyalari =====
+theme/*.bak
+theme/*.bak2
+theme/*.bak3
+theme/*.new
+
+# ===== Buyuk ham tedarikci dokumleri (scriptler canli yeniden ceker) =====
+data/*_raw.json
+data/kruitbosch_products_attrs.json
+data/merge_source_catalog.json
+data/shopify_products.csv
+
+# ===== Isletim sistemi / editor artiklari =====
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.tmp
+*~

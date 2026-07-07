@@ -1,0 +1,248 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main-product": {
+      "type": "main-product",
+      "blocks": {
+        "c7259cb9-7235-4028-b6df-3a68077fed80": {
+          "type": "title",
+          "settings": {
+            "layout": "title-right",
+            "title_size": "h2",
+            "title": "",
+            "show_vendor_brand": false,
+            "show_vendor_name": true,
+            "show_product_rating": true,
+            "share_whatsapp": true,
+            "share_facebook": true,
+            "share_twitter": true,
+            "share_pinterest": true,
+            "share_messenger": true,
+            "share_email": true,
+            "layout_mobile": "title-top"
+          }
+        },
+        "custom_liquid_PTHkRR": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- comment -%}\n  Ürün sayfasında Artikelnummer + EAN gösterir.\n  Artikelnummer = specs.article_number metafield; EAN = varyant barcode.\n  Xtra'da ürün sayfasına Custom Liquid bloğu olarak ekle (başlık/fiyat altına).\n{%- endcomment -%}\n{%- assign art = product.metafields.specs.article_number.value -%}\n{%- assign ean = product.selected_or_first_available_variant.barcode -%}\n{%- if art != blank or ean != blank -%}\n<div class=\"product-codes\" style=\"margin:10px 0;font-size:.9em;color:#555;\">\n  {%- if art != blank -%}<strong>Artikelnummer:</strong> {{ art }}{%- endif -%}\n  {%- if ean != blank -%}{% if art != blank %} &nbsp;·&nbsp; {% endif %}<strong>EAN:</strong> {{ ean }}{%- endif -%}\n</div>\n{%- endif -%}"
+          }
+        },
+        "short_description": {
+          "type": "short_description",
+          "settings": {
+            "show_read_more": true
+          }
+        },
+        "custom_liquid_KULMdX": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- comment -%}\n  ACCU + LADER seçici (BİRLEŞİK blok). Eski ayrı 'battery-selector' bloğunun YERİNE ekle\n  (iki ayrı blok add-to-cart'ı çakıştırır — bu tek blok ikisini birlikte yönetir).\n  - Accu = ek-ücret varyantı (data/surcharge-map.json)\n  - Lader = gerçek şarj ürünü varyantı (specs.charger_options metafield)\n  Add-to-cart devralınır: bisiklet + (seçili accu toeslag) + (seçili lader) birlikte eklenir.\n  Xtra ürün sayfasına Custom Liquid bloğu olarak yapıştır.\n{%- endcomment -%}\n{%- assign batts = product.metafields.specs.battery_options.value -%}\n{%- assign chargers = product.metafields.specs.charger_options.value -%}\n{%- if batts.size > 0 or chargers.size > 0 -%}\n  <div class=\"bc-selector\" data-base=\"{{ product.price }}\" style=\"margin:16px 0;\">\n\n    {%- if batts.size > 0 -%}\n      <label style=\"display:block;font-weight:600;margin-bottom:8px;\">Accu</label>\n      <div style=\"display:flex;flex-direction:column;gap:8px;\">\n        {%- for b in batts -%}\n          {%- if b.additional_cost and b.additional_cost > 0 -%}\n            {%- capture lbl -%}{{ b.capacity_wh }}Wh (+ {{ b.additional_cost | times: 100 | money }}){%- endcapture -%}\n          {%- else -%}\n            {%- capture lbl -%}{{ b.capacity_wh }}Wh (inbegrepen){%- endcapture -%}\n          {%- endif -%}\n          <label style=\"display:flex;align-items:center;gap:10px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;cursor:pointer;\">\n            <input type=\"radio\" name=\"battery-opt\" value=\"{{ b.additional_cost | default: 0 }}\" data-cap=\"{{ b.capacity_wh }}Wh\" data-label=\"{{ lbl | escape }}\" {% if forloop.first %}checked{% endif %}>\n            <span style=\"font-weight:600;\">{{ b.capacity_wh }}Wh</span>\n            <span style=\"margin-left:auto;color:#0a7d28;font-weight:600;\">\n              {%- if b.additional_cost and b.additional_cost > 0 -%}+ {{ b.additional_cost | times: 100 | money }}{%- else -%}Inbegrepen{%- endif -%}\n            </span>\n          </label>\n        {%- endfor -%}\n      </div>\n    {%- endif -%}\n\n    {%- if chargers.size > 0 -%}\n      <label style=\"display:block;font-weight:600;margin:16px 0 8px;\">Lader</label>\n      <div style=\"display:flex;flex-direction:column;gap:8px;\">\n        <label style=\"display:flex;align-items:center;gap:10px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;cursor:pointer;\">\n          <input type=\"radio\" name=\"charger-opt\" value=\"\" data-price=\"0\" checked>\n          <span>Geen extra lader</span>\n        </label>\n        {%- for c in chargers -%}\n          <label style=\"display:flex;align-items:center;gap:10px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;cursor:pointer;\">\n            <input type=\"radio\" name=\"charger-opt\" value=\"{{ c.variant_id }}\" data-price=\"{{ c.price }}\">\n            <span style=\"font-weight:600;\">{{ c.name }}</span>\n            <span style=\"margin-left:auto;color:#0a7d28;font-weight:600;\">+ {{ c.price | times: 100 | money }}</span>\n          </label>\n        {%- endfor -%}\n      </div>\n    {%- endif -%}\n\n    <div style=\"margin-top:12px;font-size:1.1em;font-weight:700;\">\n      Totaal: <span class=\"bc-total\">{{ product.price | money }}</span>\n    </div>\n  </div>\n  <script>\n  (function(){\n    var box = document.querySelector('.bc-selector');\n    if(!box) return;\n    var SUR = {\"100\":\"58361774735747\",\"150\":\"58361774768515\",\"200\":\"58361774801283\",\"300\":\"58361774834051\",\"400\":\"58361774866819\",\"449\":\"58361774899587\",\"549\":\"58361774932355\",\"649\":\"58361774965123\",\"749\":\"58361774997891\",\"759\":\"58361775030659\",\"949\":\"58361775063427\",\"959\":\"58361775096195\"};\n    var base = parseInt(box.getAttribute('data-base'),10) || 0;\n    var totalEl = box.querySelector('.bc-total');\n    function fmt(c){ return '€ ' + (c/100).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2}); }\n    function bsel(){ return box.querySelector('input[name=\"battery-opt\"]:checked'); }\n    function csel(){ return box.querySelector('input[name=\"charger-opt\"]:checked'); }\n    function calc(){\n      var bc = bsel() ? (parseInt(bsel().value,10)||0) : 0;\n      var cc = csel() ? (parseFloat(csel().getAttribute('data-price'))||0) : 0;\n      totalEl.textContent = fmt(base + bc*100 + Math.round(cc*100));\n    }\n    box.querySelectorAll('input[name=\"battery-opt\"],input[name=\"charger-opt\"]').forEach(function(r){ r.addEventListener('change', calc); });\n    calc();\n\n    var busy = false;\n    function addToCart(form){\n      if(busy) return; busy = true;\n      var idInput = form.querySelector('[name=\"id\"]');\n      var qty = parseInt((form.querySelector('[name=\"quantity\"]')||{}).value,10) || 1;\n      var items = [];\n      var br = bsel(); var bcost = br ? (parseInt(br.value,10)||0) : 0;\n      items.push({ id: parseInt(idInput.value,10), quantity: qty, properties: br ? {\"Accu\": br.getAttribute('data-label')} : {} });\n      if(bcost > 0 && SUR[String(bcost)]){\n        items.push({ id: parseInt(SUR[String(bcost)],10), quantity: qty, properties: {\"Accu\": br.getAttribute('data-cap'), \"_voor\": {{ product.title | json }} } });\n      }\n      var cr = csel();\n      if(cr && cr.value){\n        items.push({ id: parseInt(cr.value,10), quantity: qty, properties: {\"Lader voor\": {{ product.title | json }} } });\n      }\n      fetch('/cart/add.js', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items:items}) })\n        .then(function(res){ if(!res.ok) throw 0; window.location = '/cart'; })\n        .catch(function(){ busy=false; form.submit(); });\n    }\n    document.addEventListener('click', function(ev){\n      var btn = ev.target.closest('[name=\"add\"]');\n      if(!btn) return;\n      var form = btn.closest('form');\n      if(!form || !form.querySelector('[name=\"id\"]')) return;\n      ev.preventDefault(); ev.stopImmediatePropagation();\n      addToCart(form);\n    }, true);\n  })();\n  </script>\n{%- endif -%}"
+          }
+        },
+        "variant_selection": {
+          "type": "variant_selection",
+          "settings": {
+            "selection_type": "buttons",
+            "options": false,
+            "show_variant_images": true,
+            "show_unavailable_variants": true,
+            "show_single_options": false,
+            "enable_selling_plans": true
+          }
+        },
+        "inventory": {
+          "type": "inventory",
+          "settings": {}
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "show_tax": true
+          }
+        },
+        "buy_button": {
+          "type": "buy_button",
+          "settings": {
+            "button_style": "plain",
+            "show_amount_selection": true,
+            "show_dynamic_buybutton": true,
+            "button_style_dynamic_buybutton": "plain",
+            "preorder": true,
+            "preorder_button_text": "Pre-order",
+            "preorder_label": "<p>The estimated delivery time is 2-4 weeks</p>",
+            "preorder_label_color_palette": "light_2",
+            "preorder_show_dynamic_buybutton": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "beafbaf1-a0af-4326-b4de-6e78c472249c": {
+          "type": "spacer",
+          "settings": {
+            "height": 20
+          }
+        },
+        "e55f9825-3e08-4f90-bd42-9d336323be89": {
+          "type": "trustbadge",
+          "settings": {}
+        },
+        "e9431daf-3b99-40f6-89ff-dab164cda2ff": {
+          "type": "spacer",
+          "settings": {
+            "height": 15
+          }
+        },
+        "usp_1": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>10%</strong> korting op alle fietsen</p>"
+          }
+        },
+        "usp_2": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p>Ruilen en retourneren binnen <strong>14</strong> dagen, inclusief onze uitgebreide service.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "c7259cb9-7235-4028-b6df-3a68077fed80",
+        "custom_liquid_PTHkRR",
+        "short_description",
+        "custom_liquid_KULMdX",
+        "variant_selection",
+        "inventory",
+        "price",
+        "buy_button",
+        "beafbaf1-a0af-4326-b4de-6e78c472249c",
+        "e55f9825-3e08-4f90-bd42-9d336323be89",
+        "e9431daf-3b99-40f6-89ff-dab164cda2ff",
+        "usp_1",
+        "usp_2"
+      ],
+      "settings": {
+        "width": "boxed",
+        "show_thumbs_desktop": true,
+        "show_thumbs_mobile": false,
+        "images_layout": "aside",
+        "show_product_description": true,
+        "description_title_size": "h2",
+        "product_description_enable_read_more": false,
+        "pros_cons_title_size": "h2",
+        "pros": "",
+        "cons": "",
+        "specs_title_size": "h2",
+        "specifications": "",
+        "product_description_mobile_collapse": false,
+        "mobile_tabs_title_size": "h4"
+      }
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 6,
+        "number_of_items": 5,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": true,
+        "enable_quick_buy_mobile": true,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 50,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    },
+    "1655736197e3f3d938": {
+      "type": "section-faq",
+      "blocks": {
+        "1655736197d4a3dd1a-0": {
+          "type": "text",
+          "settings": {
+            "faq_question": "When will my order be delivered?",
+            "icon": "none",
+            "header_image_svg": "",
+            "header_image_width": 25,
+            "faq_answer": "<p>We ship worldwide. Your order will be packaged really carefully and delivered wherever you want. Delivery takes between 2-4 business days. You will receive an e-mail after ordering with more information about the delivery.</p>",
+            "page": "",
+            "image_width": 465,
+            "liquid": "",
+            "html": "",
+            "show_contact_form": false
+          }
+        },
+        "1655736197d4a3dd1a-1": {
+          "type": "text",
+          "settings": {
+            "faq_question": "Can I return my product?",
+            "icon": "none",
+            "header_image_svg": "",
+            "header_image_width": 25,
+            "faq_answer": "<p>Orders can be returned or exchanged within 30 days of receiving the parcel, providing they are in original resalable condition.</p>",
+            "page": "",
+            "image_width": 465,
+            "liquid": "",
+            "html": "",
+            "show_contact_form": false
+          }
+        },
+        "1655736197d4a3dd1a-2": {
+          "type": "text",
+          "settings": {
+            "faq_question": "What can I do if my item (or part of it) is damaged?",
+            "icon": "none",
+            "header_image_svg": "",
+            "header_image_width": 25,
+            "faq_answer": "<p>We work hard to deliver your items without damage. Orders can be returned or exchanged within 30 days of receiving the parcel, providing they are in original resalable condition.</p>",
+            "page": "",
+            "image_width": 465,
+            "liquid": "",
+            "html": "",
+            "show_contact_form": false
+          }
+        }
+      },
+      "block_order": [
+        "1655736197d4a3dd1a-0",
+        "1655736197d4a3dd1a-1",
+        "1655736197d4a3dd1a-2"
+      ],
+      "disabled": true,
+      "settings": {
+        "alignment": "left",
+        "compact": false,
+        "width": "boxed",
+        "title": "<h2>Returns & Delivery</h2>",
+        "title_underline_style": "none",
+        "spacing_desktop": 50,
+        "spacing_mobile": 30,
+        "fix_zindex": 0
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main-product",
+    "recommendations",
+    "1655736197e3f3d938"
+  ]
+}

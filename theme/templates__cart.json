@@ -1,0 +1,91 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": false
+      }
+    },
+    "section_custom_liquid_mwcFTC": {
+      "type": "section-custom-liquid",
+      "name": "t:sections.custom_liquid.presets.name",
+      "settings": {
+        "custom_liquid": "{%- comment -%}\n  Sepet aksesuar hatırlatması — sepetteki her bisiklet için akü/lader \"ekle\" butonları.\n  Cart şablonuna Custom Liquid bloğu olarak ekle. <span> kullanır (tema <button> stilini ezmesin diye).\n{%- endcomment -%}\n{%- assign show = false -%}\n{%- for item in cart.items -%}\n  {%- if item.product.metafields.specs.charger_options.value or item.product.metafields.specs.battery_options.value -%}\n    {%- assign show = true -%}\n  {%- endif -%}\n{%- endfor -%}\n{%- if show -%}\n  <div class=\"acc-upsell\" style=\"margin:16px 0;padding:16px 18px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;\">\n    <div style=\"font-weight:700;font-size:15px;color:#111;\">Vergeet uw accu of lader niet</div>\n    <p style=\"margin:2px 0 14px;font-size:13px;color:#6b7280;\">Voeg eenvoudig toe aan uw bestelling.</p>\n    {%- for item in cart.items -%}\n      {%- assign chargers = item.product.metafields.specs.charger_options.value -%}\n      {%- assign batts = item.product.metafields.specs.battery_options.value -%}\n      {%- if chargers or batts -%}\n        <div class=\"acc-bike\" style=\"margin-bottom:12px;\">\n          <div style=\"font-size:12px;color:#9ca3af;margin-bottom:7px;\">{{ item.product.title }}</div>\n          <div style=\"display:flex;flex-wrap:wrap;gap:8px;\">\n            {%- if batts -%}\n              {%- for b in batts -%}\n                {%- if b.additional_cost and b.additional_cost > 0 -%}\n                  <span class=\"acc-btn acc-batt\" role=\"button\" tabindex=\"0\" data-cost=\"{{ b.additional_cost }}\" data-cap=\"{{ b.capacity_wh }}Wh\" data-bike=\"{{ item.product.title | escape }}\">+ Accu {{ b.capacity_wh }}Wh · €{{ b.additional_cost }}</span>\n                {%- endif -%}\n              {%- endfor -%}\n            {%- endif -%}\n            {%- if chargers -%}\n              {%- for c in chargers -%}\n                <span class=\"acc-btn\" role=\"button\" tabindex=\"0\" data-variant=\"{{ c.variant_id }}\" data-bike=\"{{ item.product.title | escape }}\">+ {{ c.name }} · €{{ c.price }}</span>\n              {%- endfor -%}\n            {%- endif -%}\n          </div>\n        </div>\n      {%- endif -%}\n    {%- endfor -%}\n  </div>\n  <style>\n    .acc-upsell .acc-btn{display:inline-block;cursor:pointer;border:1px solid #d1d5db;background:#fff;color:#111827;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;line-height:1.2;transition:.15s;}\n    .acc-upsell .acc-btn:hover{border-color:#111827;background:#f9fafb;}\n  </style>\n  <script>\n  (function(){\n    var box = document.querySelector('.acc-upsell'); if(!box) return;\n    var SUR = {\"100\":\"58361774735747\",\"150\":\"58361774768515\",\"200\":\"58361774801283\",\"300\":\"58361774834051\",\"400\":\"58361774866819\",\"449\":\"58361774899587\",\"549\":\"58361774932355\",\"649\":\"58361774965123\",\"749\":\"58361774997891\",\"759\":\"58361775030659\",\"949\":\"58361775063427\",\"959\":\"58361775096195\"};\n    var inCart = [{% for item in cart.items %}{{ item.variant_id }}{% unless forloop.last %},{% endunless %}{% endfor %}];\n    var battInCart = Object.keys(SUR).some(function(k){ return inCart.indexOf(parseInt(SUR[k],10)) >= 0; });\n    box.querySelectorAll('.acc-btn').forEach(function(btn){\n      var isCharger = !!btn.getAttribute('data-variant');\n      var vid = isCharger ? btn.getAttribute('data-variant') : SUR[btn.getAttribute('data-cost')];\n      if((isCharger && vid && inCart.indexOf(parseInt(vid,10)) >= 0) || (!isCharger && battInCart)) { btn.style.display = 'none'; }\n      function add(){\n        if(!vid || btn.dataset.busy) return; btn.dataset.busy = '1'; btn.style.opacity = .5;\n        var props = isCharger ? { 'Lader voor': btn.getAttribute('data-bike') }\n                              : { 'Accu': btn.getAttribute('data-cap'), '_voor': btn.getAttribute('data-bike') };\n        fetch('/cart/add.js', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items:[{ id: parseInt(vid,10), quantity:1, properties: props }] }) })\n          .then(function(r){ if(!r.ok) throw 0; window.location.reload(); })\n          .catch(function(){ btn.dataset.busy=''; btn.style.opacity=1; alert('Kon niet toevoegen'); });\n      }\n      btn.addEventListener('click', add);\n      btn.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); add(); } });\n    });\n    box.querySelectorAll('.acc-bike').forEach(function(g){\n      if(![].some.call(g.querySelectorAll('.acc-btn'), function(b){ return b.style.display !== 'none'; })) g.style.display = 'none';\n    });\n    if(![].some.call(box.querySelectorAll('.acc-btn'), function(b){ return b.style.display !== 'none'; })) box.style.display = 'none';\n  })();\n  </script>\n{%- endif -%}",
+        "spacing_desktop": 50,
+        "spacing_mobile": 30,
+        "fix_zindex": 0
+      }
+    },
+    "main-cart": {
+      "type": "main-cart",
+      "blocks": {
+        "22fe4f0a-fb8b-4a4b-8b48-63686beda103": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>Free shipping</strong> above 50,00 </p>"
+          }
+        },
+        "f10988bd-7b8f-4420-9e2e-d6c8e29c2c7f": {
+          "type": "shipping_timer",
+          "settings": {}
+        },
+        "b425d9f9-59f6-4925-978a-e491a14ab7ee": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p>We accept <strong>all payments</strong> from US and EU</p>"
+          }
+        }
+      },
+      "block_order": [
+        "22fe4f0a-fb8b-4a4b-8b48-63686beda103",
+        "f10988bd-7b8f-4420-9e2e-d6c8e29c2c7f",
+        "b425d9f9-59f6-4925-978a-e491a14ab7ee"
+      ],
+      "settings": {
+        "width": "boxed",
+        "title_size": "h1",
+        "show_dynamic_buybutton": true,
+        "enable_discount_tab": true,
+        "show_payment_methods": true,
+        "show_order_notes": true,
+        "order_notes_alignment": "right",
+        "enable_terms_checkbox": false,
+        "terms_text": "<p>I accept the <a href='/policies/privacy-policy' title='Privacy Policy'>privacy policy</a>"
+      }
+    },
+    "53ba9a68-c99f-44db-9749-5863f9de4d8f": {
+      "type": "section-recently-viewed-products",
+      "settings": {
+        "number_of_items": 6,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h3>These products had your attention:</h3>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": true,
+        "enable_quick_buy_mobile": true,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": true,
+        "spacing_desktop": 50,
+        "spacing_mobile": 30,
+        "fix_zindex": 0
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "section_custom_liquid_mwcFTC",
+    "main-cart",
+    "53ba9a68-c99f-44db-9749-5863f9de4d8f"
+  ]
+}
