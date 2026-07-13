@@ -22,7 +22,14 @@ jobs:
       - uses: actions/checkout@v4
       - name: sync.env olustur (Secret'tan)
         shell: bash
-        run: printf '%s' "${{ secrets.SYNC_ENV }}" > sync.env
+        run: |
+          printf '%s' "${{ secrets.SYNC_ENV }}" > sync.env
+          sed -i 's/\r$//' sync.env               # CRLF -> LF (secret bozuk satir sonuyla yapistirilmis olabilir)
+          echo "sync.env satir sayisi: $(wc -l < sync.env)"
+          # Zorunlu anahtarlar var mi? (deger sizdirmadan sadece varlik kontrolu)
+          for k in KRUITBOSCH_USERNAME KRUITBOSCH_PASSWORD KRUITBOSCH_CUSTOMER ACCELL_USERNAME ACCELL_PASSWORD SHOPIFY_CLIENT_ID SHOPIFY_CLIENT_SECRET SHOPIFY_SHOP SHOPIFY_LOCATION; do
+            grep -q "^$k=" sync.env || { echo "HATA: secret'ta $k eksik"; exit 1; }
+          done
       - name: daily_sync calistir
         shell: pwsh
         run: ./daily_sync.ps1
