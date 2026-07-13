@@ -14,6 +14,14 @@ $env2 = @{}
 Get-Content (Join-Path $baseDir "sync.env") | ForEach-Object { if ($_ -cmatch '^([A-Z_]+)=(.*)$') { $env2[$Matches[1]] = $Matches[2].Trim() } }
 L "senkron basladi"
 
+# GUVENLIK (2026-07-14): zorunlu env degiskenleri eksikse HEMEN kirmizi cik.
+# Sebep: SHOPIFY_LOCATION bos olursa her inventory_levels/set cagrisi coker ama per-item try/catch
+# yuttugu icin kosu YESIL cikip stoklar SESSIZCE senkronsuz kalir (bulutta ~1 hafta drift yasandi).
+$reqEnv = 'KRUITBOSCH_USERNAME','KRUITBOSCH_PASSWORD','KRUITBOSCH_CUSTOMER','ACCELL_USERNAME','ACCELL_PASSWORD','SHOPIFY_CLIENT_ID','SHOPIFY_CLIENT_SECRET','SHOPIFY_SHOP','SHOPIFY_LOCATION'
+$missing = @($reqEnv | Where-Object { [string]::IsNullOrWhiteSpace("$($env2[$_])") })
+if ($missing.Count) { L "GUVENLIK: eksik/bos env degiskeni: $($missing -join ', ') - magazaya dokunulmuyor. Cikis."; exit 1 }
+if ("$($env2.SHOPIFY_LOCATION)" -notmatch '^\d+$') { L "GUVENLIK: SHOPIFY_LOCATION sayisal degil ('$($env2.SHOPIFY_LOCATION)') - cikis."; exit 1 }
+
 $supplierQty = @{}   # sku -> hedef adet
 $advies = @{}        # sku -> guncel advies (FIYAT SENKRONU 2026-07-07: fiyat=advies, indirim korunmaz - kullanici karari)
 
@@ -144,7 +152,7 @@ try {
     }
     L "shopify: $($store.Count) urun / $((@($store | ForEach-Object { $_.variants })).Count) varyant tarandi"
 
-    $qtyChanged = 0; $activated = 0; $drafted = 0; $skipped = 0; $priceChanged = 0
+    $qtyChanged = 0; $activated = 0; $drafted = 0; $skipped = 0; $priceChanged = 0; $writeErr = 0
     foreach ($item in $store) {
         $known = @($item.variants | Where-Object { $_.sku -and $supplierQty.ContainsKey($_.sku) })
         if (-not $known.Count) { $skipped++; continue }
@@ -190,10 +198,13 @@ try {
                 } else { $drafted++ }
                 Start-Sleep -Milliseconds 300
             }
-        } catch { L "urun hatasi $($item.product_id): $($_.Exception.Message)" }
+        } catch { $writeErr++; L "urun hatasi $($item.product_id): $($_.Exception.Message)" }
     }
-    L "SONUC: adet degisen $qtyChanged | fiyat degisen $priceChanged | satisa acilan $activated | satistan cekilen $drafted | veri disi $skipped"
-} catch { L "SHOPIFY HATA: $($_.Exception.Message)" }
+    L "SONUC: adet degisen $qtyChanged | fiyat degisen $priceChanged | satisa acilan $activated | satistan cekilen $drafted | veri disi $skipped | yazma hatasi $writeErr"
+    # GUVENLIK (2026-07-14): cok sayida urun yazma hatasi = ciddi sorun (token/location/API) -> KIRMIZI cik ki bulutta alarm versin.
+    # Saglikli kosuda writeErr ~0 olur. Esik 10: gecici tekil API hatalarini tolere eder, sistemik cokusu yakalar.
+    if ($writeErr -gt 10) { L "GUVENLIK: $writeErr urun yazma hatasi (sistemik sorun) - bulut ALARM. Cikis."; exit 1 }
+} catch { L "SHOPIFY HATA: $($_.Exception.Message)"; exit 1 }
 
 # ================= AKU SECENEKLERI (specs.battery_options) =================
 # Flex bisikletlerin aku seceneklerini taze tedarikci stok/fiyatiyla tazeler (musteri sikayeti duzeltmesi 2026-07-06).
