@@ -17,7 +17,8 @@ $gw = "https://api-gateway.accentry.com"
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
 
 # --- baglantilar (dedupe) ---
-$links = Import-Csv "$dataDir/bike_battery_links.csv" | Where-Object { $_.tur -eq 'Batteries' } | Sort-Object bike_sku, item_sku -Unique
+$linksAll = @(Import-Csv "$dataDir/bike_battery_links.csv")
+$links = $linksAll | Where-Object { $_.tur -eq 'Batteries' } | Sort-Object bike_sku, item_sku -Unique
 $arts = @($links.item_sku | Select-Object -Unique)
 Log "baglanti: $($links.Count) | bisiklet: $((@($links.bike_sku | Select-Object -Unique)).Count) | aku makalesi: $($arts.Count)"
 
@@ -25,6 +26,46 @@ Log "baglanti: $($links.Count) | bisiklet: $((@($links.bike_sku | Select-Object 
 $ab = @{ username = $env:ACCELL_USERNAME; password = $env:ACCELL_PASSWORD } | ConvertTo-Json
 $atok = (Invoke-RestMethod -Method Post -Uri "$gw/authorize" -Body $ab -ContentType 'application/json' -TimeoutSec 30).result.bearer_token
 $ah = @{ Authentication = "Bearer $atok"; accept = "application/json"; "X-version" = "2.0" }
+
+# --- AKU SETLERINI CANLI TAZELE (2026-07-14, d-Rule vakasi: linkler bayatti, sitede 500Wh
+#     gorunurken bayi samenstellen SADECE 625Wh donduruyordu) ---
+# Her bisikletin uyumlu aku SETI batteriesandchargers'tan yeniden cekilir; bos/hata donerse
+# eski linkler korunur (guvenlik). Sonuc CSV'ye geri yazilir (bulut workflow auto-commit eder).
+$bikes = @($links.bike_sku | Select-Object -Unique)
+$liveSets = @{}; $bi = 0
+foreach ($bk in $bikes) {
+    $bi++
+    if ($bi % 40 -eq 0) {
+        try { $atok = (Invoke-RestMethod -Method Post -Uri "$gw/authorize" -Body $ab -ContentType 'application/json' -TimeoutSec 30).result.bearer_token; $ah.Authentication = "Bearer $atok" } catch { }
+    }
+    try {
+        $ah["fe-request-id"] = [guid]::NewGuid().ToString()
+        $rb = Invoke-RestMethod -Uri "$gw/articles/$bk/batteriesandchargers/?companyGroupCode=ANL&languageCode=nl" -Headers $ah -TimeoutSec 30
+        $set = @(@($rb.result.Batteries) | ForEach-Object { "$($_.article_code)".Trim() } | Where-Object { $_ } | Select-Object -Unique)
+        if ($set.Count) { $liveSets[$bk] = $set }
+    } catch { }
+    Start-Sleep -Milliseconds 250
+}
+$setChanged = 0
+if ($liveSets.Count -ge [math]::Max(10, [int]($bikes.Count * 0.5))) {
+    $newRows = @($linksAll | Where-Object { $_.tur -ne 'Batteries' })
+    foreach ($bk in $bikes) {
+        if ($liveSets.ContainsKey($bk)) {
+            $old = @(($links | Where-Object { $_.bike_sku -eq $bk }).item_sku | Sort-Object)
+            $new = @($liveSets[$bk] | Sort-Object)
+            if (($old -join ',') -ne ($new -join ',')) { $setChanged++ }
+            foreach ($a in $liveSets[$bk]) { $newRows += [PSCustomObject]@{ bike_sku = $bk; item_sku = $a; tur = 'Batteries' } }
+        } else {
+            foreach ($r0 in ($links | Where-Object { $_.bike_sku -eq $bk })) { $newRows += $r0 }
+        }
+    }
+    $newRows | Export-Csv "$dataDir/bike_battery_links.csv" -NoTypeInformation -Encoding utf8
+    $links = @($newRows | Where-Object { $_.tur -eq 'Batteries' } | Sort-Object bike_sku, item_sku -Unique)
+    $arts = @($links.item_sku | Select-Object -Unique)
+    Log "canli set tazeleme: $($liveSets.Count)/$($bikes.Count) bisiklet | seti degisen: $setChanged | yeni makale evreni: $($arts.Count)"
+} else {
+    Log "canli set tazeleme ATLANDI (yetersiz cevap: $($liveSets.Count)/$($bikes.Count)) - eski linklerle devam"
+}
 $fresh = @{}
 $q = ($arts | ForEach-Object { "c=$_" }) -join '&'
 $ah["fe-request-id"] = [guid]::NewGuid().ToString()

@@ -210,4 +210,11 @@ try {
 try {
     & (Join-Path $baseDir "build_cortina_options.ps1") -Quiet | ForEach-Object { L "cortina: $_" }
 } catch { L "CORTINA SECENEK HATA: $($_.Exception.Message)" }
+# OTO-IYILESTIRME (2026-07-14): stok 0'a inince bir Shopify Flow urunu TASLAGA cekiyor -> "stoksuzlar da vitrinde" politikasiyla celisir.
+# Bu turda stok-bitti olayiyla taslaga dusen GORSELLI+fiyatli urunleri geri aktive+yayinla (gorunmezlik penceresini kapatir).
+# Flow asenkron tetiklenir -> once kisa bekleme. Gorselsizlere DOKUNMAZ (Flow onlari zaten geri ceker + kirik gorunur).
+try {
+    Start-Sleep -Seconds 30
+    & (Join-Path $baseDir "activate_priced_drafts.ps1") | ForEach-Object { L "oto-aktive: $_" }
+} catch { L "OTO-AKTIVE HATA: $($_.Exception.Message)" }
 L "senkron bitti"
