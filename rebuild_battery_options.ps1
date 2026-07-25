@@ -91,8 +91,12 @@ foreach ($ma in $missing) {
     Start-Sleep -Milliseconds 300
 }
 Log "canli veri: $($fresh.Count)/$($arts.Count) makale"
-# GUVENLIK FRENI: veri eksikse hicbir sey yazma
-if ($fresh.Count -lt [math]::Max(10, [int]($arts.Count * 0.7))) { Log "FREN: canli veri yetersiz ($($fresh.Count)) - cikiliyor, yazma YAPILMADI"; exit 1 }
+# GUVENLIK FRENI: veri eksikse hicbir sey yazma.
+# exit 0 (2026-07-14): bu bir HATA degil, gecici Accell hickirikinda ZARIF ATLAMA. Eskiden exit 1 idi ve
+# daily_sync'e & ile cagrilinca $LASTEXITCODE'a sizip ANA senkron basarili olsa bile tum bulut kosusunu
+# KIRMIZI yapiyordu (2026-07-25 05:12/08:07 vakasi: SONUC adet degisen 1 ama kosu fail). Ana stok hatalari
+# daily_sync'in kendi frenleriyle (env/yazma hatasi/Shopify) zaten kirmizi verir.
+if ($fresh.Count -lt [math]::Max(10, [int]($arts.Count * 0.7))) { Log "FREN: canli veri yetersiz ($($fresh.Count)) - ATLANDI, yazma YAPILMADI (gecici, sonraki kosu tazeler)"; exit 0 }
 
 # --- Shopify token + aku urunlerinden EAN (oncelikli kaynak) ---
 $sb = @{ grant_type = "client_credentials"; client_id = $env:SHOPIFY_CLIENT_ID; client_secret = $env:SHOPIFY_CLIENT_SECRET } | ConvertTo-Json

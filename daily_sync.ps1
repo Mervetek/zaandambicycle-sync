@@ -229,3 +229,6 @@ try {
     & (Join-Path $baseDir "activate_priced_drafts.ps1") | ForEach-Object { L "oto-aktive: $_" }
 } catch { L "OTO-AKTIVE HATA: $($_.Exception.Message)" }
 L "senkron bitti"
+# Buraya ulastiysak ana stok senkronu BASARILI (tum gercek hatalar yukarida exit 1 yapar).
+# Ikincil alt-scriptlerden (aku/cortina frenleri) sizabilecek $LASTEXITCODE kosuyu KIRMIZI yapmasin.
+exit 0

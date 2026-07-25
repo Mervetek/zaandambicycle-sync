@@ -30,19 +30,6 @@ jobs:
           for k in KRUITBOSCH_USERNAME KRUITBOSCH_PASSWORD KRUITBOSCH_CUSTOMER ACCELL_USERNAME ACCELL_PASSWORD SHOPIFY_CLIENT_ID SHOPIFY_CLIENT_SECRET SHOPIFY_SHOP SHOPIFY_LOCATION; do
             grep -q "^$k=" sync.env || { echo "HATA: secret'ta $k eksik"; exit 1; }
           done
-      - name: teshis (gecici - sorun bulununca silinecek)
-        shell: bash
-        run: |
-          shop=$(grep '^SHOPIFY_SHOP=' sync.env | cut -d= -f2- | tr -d '\r')
-          echo "SHOPIFY_SHOP degeri: [$shop]"
-          echo "proxy env (kucuk): http_proxy=[${http_proxy:-}] https_proxy=[${https_proxy:-}] all_proxy=[${all_proxy:-}] no_proxy=[${no_proxy:-}]"
-          echo "proxy env (buyuk): HTTP_PROXY=[${HTTP_PROXY:-}] HTTPS_PROXY=[${HTTPS_PROXY:-}] ALL_PROXY=[${ALL_PROXY:-}] NO_PROXY=[${NO_PROXY:-}]"
-          echo "--- DNS cozumleme ---"
-          getent hosts "$shop" || echo "DNS COZULEMEDI: [$shop]"
-          echo "--- curl Shopify ---"
-          curl -sS -m 20 -o /dev/null -w "shop -> HTTP %{http_code}\n" "https://$shop/admin/api/2024-10/shop.json" || echo "curl Shopify BASARISIZ"
-          echo "--- curl Kruitbosch (kontrol) ---"
-          curl -sS -m 20 -o /dev/null -w "kb -> HTTP %{http_code}\n" "https://webservice.kruitbosch.nl/" || echo "curl KB BASARISIZ"
       - name: daily_sync calistir
         shell: pwsh
         run: ./daily_sync.ps1

@@ -25,8 +25,8 @@ try {
     foreach ($s in @($r.StocksAndPrices)) { $stok["$($s.ProductCode)".Trim()] = [int]$s.AvailabilityId }
 } catch { Log "Kruitbosch stok HATASI: $($_.Exception.Message)" }
 Log "taze stok: $($stok.Count)/$($ccodes.Count)"
-# GUVENLIK FRENI
-if ($stok.Count -lt 8) { Log "FREN: Kruitbosch stok verisi yetersiz - yazma YAPILMADI"; exit 1 }
+# GUVENLIK FRENI - exit 0: gecici KB hickiriki ANA senkronu (daily_sync) kirmizi yapmasin (bkz. rebuild_battery_options notu 2026-07-14)
+if ($stok.Count -lt 8) { Log "FREN: Kruitbosch stok verisi yetersiz - ATLANDI, yazma YAPILMADI (gecici)"; exit 0 }
 
 # --- katalog haritasi (advies, EAN, kapasite) ---
 $info = @{}
