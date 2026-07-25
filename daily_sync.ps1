@@ -101,29 +101,65 @@ try {
     $accSkus += @($storeSkus | Where-Object { -not $supplierQty.ContainsKey($_) })   # magaza-gudumlu kapsam (2026-07-07)
     $accSkus = @($accSkus | Where-Object { $_ } | Select-Object -Unique)
     L "accell: $($accSkus.Count) kod sorgulanacak"
+    # Bir Accell batch'ini isle; donen kod-veri ciftlerini supplierQty/advies'e yazar, kac yeni hit oldugunu doner.
+    $applyBatch = {
+        param($resp, $codes)
+        $hit = 0
+        foreach ($code in $codes) {
+            $a = $resp.result.PSObject.Properties[$code]
+            if ($a -and $a.Value) {
+                $v = $a.Value
+                # SADECE stock_status 1-2 gercek raf stogudur; st3 = yoldaki/rezerve adet (satista "stokta" gosterilemez, bkz. musteri sikayeti 2026-07-05)
+                $qty = 0
+                if ([int]$v.stock_status -le 2) { $qty = if ([int]$v.stock -gt 0) { [int]$v.stock } else { 5 } }
+                $script:supplierQty[$code] = $qty
+                if ($v.retail_price.value) { $script:advies[$code] = [double]$v.retail_price.value }
+                $hit++
+            }
+        }
+        $hit
+    }
     $found = 0
     for ($i = 0; $i -lt $accSkus.Count; $i += 20) {
         $batch = $accSkus[$i..([Math]::Min($i+19, $accSkus.Count-1))]
         $q = ($batch | ForEach-Object { "c=$_" }) -join '&'
-        try {
-            $ah["fe-request-id"] = [guid]::NewGuid().ToString()
-            $r = Invoke-RestMethod -Uri "https://api-gateway.accentry.com/articles?$q&companyGroupCode=ANL&languageCode=nl" -Headers $ah -TimeoutSec 60
-            foreach ($code in $batch) {
-                $a = $r.result.PSObject.Properties[$code]
-                if ($a -and $a.Value) {
-                    $v = $a.Value
-                    # SADECE stock_status 1-2 gercek raf stogudur; st3 = yoldaki/rezerve adet (satista "stokta" gosterilemez, bkz. musteri sikayeti 2026-07-05)
-                    $qty = 0
-                    if ([int]$v.stock_status -le 2) { $qty = if ([int]$v.stock -gt 0) { [int]$v.stock } else { 5 } }
-                    $supplierQty[$code] = $qty
-                    if ($v.retail_price.value) { $advies[$code] = [double]$v.retail_price.value }
-                    $found++
-                }
+        # RETRY (2026-07-25): gecici hata -> 3 deneme, backoff + token yenile (200-BOS rate-limit exception atmaz, onu ikinci gecis toplar)
+        for ($att = 1; $att -le 3; $att++) {
+            try {
+                $ah["fe-request-id"] = [guid]::NewGuid().ToString()
+                $r = Invoke-RestMethod -Uri "https://api-gateway.accentry.com/articles?$q&companyGroupCode=ANL&languageCode=nl" -Headers $ah -TimeoutSec 60
+                $found += (& $applyBatch $r $batch)
+                break
+            } catch {
+                if ($att -eq 3) { L "accell parti hatasi (3 deneme): $($_.Exception.Message)" }
+                else { Start-Sleep -Seconds ($att * 3); try { $ah.Authentication = "Bearer " + (Invoke-RestMethod -Method Post -Uri "https://api-gateway.accentry.com/authorize" -Body $ab -ContentType 'application/json' -TimeoutSec 30).result.bearer_token } catch {} }
             }
-        } catch { L "accell parti hatasi: $($_.Exception.Message)" }
+        }
         Start-Sleep -Milliseconds 350
     }
     L "accell: $found stok kaydi"
+    # IKINCI GECIS (2026-07-25): Model Kesfi ile cakisirsa Accell rate-limit'e girip batch'leri 200-BOS donuyor
+    # (0 exception ama veri yok; KANITLI: cakisan kosu 263/781 vs saglikli 605/781). $found saglikli baseline'in
+    # (~600) cok altindaysa (esik 450) cakismanin gecmesini bekleyip SADECE eksik kodlari bir kez daha sorgula.
+    # Saglikli kosuda hic tetiklenmez -> yavaslatmaz. (Asil cozum: Model Kesfi 13:00'e alindi, cakisma olmamali.)
+    if ($found -lt 450 -and $accSkus.Count -gt 400) {
+        L "accell: dusuk veri ($found/$($accSkus.Count)) - olasi cakisma/rate-limit. 30sn bekleyip eksikleri yeniden sorguluyorum."
+        Start-Sleep -Seconds 30
+        try { $ah.Authentication = "Bearer " + (Invoke-RestMethod -Method Post -Uri "https://api-gateway.accentry.com/authorize" -Body $ab -ContentType 'application/json' -TimeoutSec 30).result.bearer_token } catch {}
+        $miss = @($accSkus | Where-Object { -not $supplierQty.ContainsKey($_) })
+        $recovered = 0
+        for ($i = 0; $i -lt $miss.Count; $i += 20) {
+            $batch = $miss[$i..([Math]::Min($i+19, $miss.Count-1))]
+            $q = ($batch | ForEach-Object { "c=$_" }) -join '&'
+            try {
+                $ah["fe-request-id"] = [guid]::NewGuid().ToString()
+                $r = Invoke-RestMethod -Uri "https://api-gateway.accentry.com/articles?$q&companyGroupCode=ANL&languageCode=nl" -Headers $ah -TimeoutSec 60
+                $g = (& $applyBatch $r $batch); $found += $g; $recovered += $g
+            } catch {}
+            Start-Sleep -Milliseconds 400
+        }
+        L "accell: ikinci gecis kurtarilan: $recovered | toplam: $found"
+    }
 } catch { L "ACCELL HATA: $($_.Exception.Message)" }
 
 if ($supplierQty.Count -lt 100) { L "GUVENLIK: tedarikci verisi cok az ($($supplierQty.Count)) - magazaya dokunulmuyor. Cikis."; exit 1 }
