@@ -43,5 +43,16 @@ jobs:
             echo "durum degismedi"
           else
             git commit -m "auto: senkron durumu $(date -u +%FT%TZ)"
-            git push
+            # remote ilerlemis olabilir (elle push'lar / diger kosular) -> rebase + retry.
+            # Push yine olmazsa KRITIK DEGIL: sync zaten basarili, bike_battery_links.csv sonraki kosuda yine turetilir.
+            pushed=0
+            for i in 1 2 3; do
+              if git pull --rebase --autostash origin main; then
+                if git push; then pushed=1; break; fi
+              else
+                git rebase --abort 2>/dev/null || true
+              fi
+              echo "push denemesi $i basarisiz, 5sn bekle..."; sleep 5
+            done
+            if [ "$pushed" != "1" ]; then echo "UYARI: durum dosyasi push edilemedi (sync BASARILI - kritik degil)"; fi
           fi
