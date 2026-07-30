@@ -20,6 +20,8 @@ $labels = [ordered]@{
     'brake_system_front_brand' = 'Rem voor (merk)'; 'brake_system_front_type' = 'Rem voor (type)'
     'primary_brake_system_rear_model' = 'Rem achter'; 'primary_brake_system_rear_type' = 'Rem achter (type)'
     'weight_netto' = 'Gewicht (kg)'; 'elo_bike_type' = 'E-bike type'
+    # EK 5 SATIR (musteri istegi 2026-07-30, build_electric_specs.ps1 yazar): Voorvork/Verlichting/Slot/Drager/Standaard
+    'spec_voorvork' = 'Voorvork'; 'spec_verlichting' = 'Verlichting'; 'spec_slot' = 'Slot'; 'spec_drager' = 'Bagagedrager'; 'spec_standaard' = 'Standaard'
     # NOT: 'article_number' (Artikelnummer) tablodan cikarildi (2026-07-07) - artik baslik altinda
     # temanin 'codes' blogu ile SECILEN VARYANTIN SKU'su olarak dinamik gosteriliyor (bkz. product.json codes blok).
 }
@@ -29,7 +31,8 @@ $updated = 0; $skipped = 0; $same = 0
 $cursor = $null
 do {
     $after = if ($cursor) { ', after: \"' + $cursor + '\"' } else { '' }
-    $gql = '{ "query": "query { products(first: 100, query: \"status:active OR status:draft\"' + $after + ') { pageInfo { hasNextPage endCursor } edges { node { legacyResourceId bodyHtml metafields(first: 40, namespace: \"specs\") { edges { node { key value } } } } } } }" }'
+    # metafields(first:150): eski-sema urunlerde ~60 specs var, el_components/spec_* en sonda kalip first:60'i asiyordu (2026-07-30 bug). products(first:40) ile GraphQL maliyeti dengelenir.
+$gql = '{ "query": "query { products(first: 40, query: \"status:active OR status:draft\"' + $after + ') { pageInfo { hasNextPage endCursor } edges { node { legacyResourceId bodyHtml metafields(first: 150, namespace: \"specs\") { edges { node { key value } } } } } } }" }'
     $r = Invoke-RestMethod -Method Post -Uri "https://$shop/admin/api/$api/graphql.json" -Headers $h -Body $gql -ContentType 'application/json' -TimeoutSec 60
     $pg = $r.data.products
     foreach ($e in $pg.edges) {
@@ -48,6 +51,17 @@ do {
         }
         if (-not $rows) { $skipped++; continue }
         $table = $marker + '<h3>Specificaties</h3><table class="specs-table" style="width:100%;border-collapse:collapse">' + $rows + '</table>'
+        # ELEKTRISCHE COMPONENTEN tablosu (e-bike'lar; specs.el_components JSON [{label,value}], build_electric_specs.ps1 yazar)
+        if ($mf.ContainsKey('el_components') -and "$($mf['el_components'])".Trim()) {
+            $ecRows = ''
+            # PS 5.1 tuzagi: ConvertFrom-Json diziyi sarabilir -> ForEach ile zorla enumerate
+            foreach ($o in @((ConvertFrom-Json -InputObject "$($mf['el_components'])") | ForEach-Object { $_ })) {
+                $lbl = [System.Net.WebUtility]::HtmlEncode("$($o.label)".Trim())
+                $val = [System.Net.WebUtility]::HtmlEncode((("$($o.value)".Trim() -replace "$([char]0xFFFD)", '') -replace '\s{2,}', ' '))
+                if ($lbl -and $val) { $ecRows += "<tr><td><strong>$lbl</strong></td><td>$val</td></tr>" }
+            }
+            if ($ecRows) { $table += '<h3>Elektrische Componenten</h3><table class="specs-table" style="width:100%;border-collapse:collapse">' + $ecRows + '</table>' }
+        }
         $body = "$($n.bodyHtml)"
         if ($body -match [regex]::Escape($marker)) { $body = ($body -split [regex]::Escape($marker))[0] }
         $newBody = ($body.Trim() + "`n" + $table).Trim()

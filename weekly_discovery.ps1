@@ -105,7 +105,12 @@ if ($newKb.Count) {
     }
     L "kruitbosch import: $ok yeni urun"
 }
-# --- yeni eklenen urunlerin aciklama tablolari (Specificaties) ---
+# --- ELEKTRIK KOMPONENT + ek genel metafield'lari (Accell specs + KB attrs) - tablodan ONCE ---
+# specs.el_components + spec_voorvork/verlichting/slot/drager/standaard yazar (musteri istegi 2026-07-30).
+try {
+    & (Join-Path $baseDir "build_electric_specs.ps1") -Quiet | ForEach-Object { L "elektrik-spec: $_" }
+} catch { L "ELEKTRIK SPEC HATA: $($_.Exception.Message)" }
+# --- yeni eklenen urunlerin aciklama tablolari (Specificaties + Elektrische Componenten) ---
 # build_specs.ps1 metafield'lari import sirasinda yaziliyor; bu adim gorunur HTML tabloyu tamamlar.
 # Idempotent: tablosu zaten dogru olanlari atlar, sadece yeni/degisenler yazilir.
 try {
