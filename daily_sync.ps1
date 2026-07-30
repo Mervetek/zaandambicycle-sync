@@ -257,6 +257,11 @@ try {
 try {
     & (Join-Path $baseDir "build_cortina_options.ps1") -Quiet | ForEach-Object { L "cortina: $_" }
 } catch { L "CORTINA SECENEK HATA: $($_.Exception.Message)" }
+# Accell (Cortina DEGIL) sarj temizligi: Batavus/Sparta/Loekie'de sarj fiyata DAHIL -> charger_options=[]
+# (yeni importlar ara sira yanlis "Bosch lader ... BES3" secicisi kaziniyor, 2026-07-30 musteri sikayeti)
+try {
+    & (Join-Path $baseDir "enforce_accell_no_charger.ps1") -Quiet | ForEach-Object { L "sarj: $_" }
+} catch { L "SARJ TEMIZLIK HATA: $($_.Exception.Message)" }
 # OTO-IYILESTIRME (2026-07-14): stok 0'a inince bir Shopify Flow urunu TASLAGA cekiyor -> "stoksuzlar da vitrinde" politikasiyla celisir.
 # Bu turda stok-bitti olayiyla taslaga dusen GORSELLI+fiyatli urunleri geri aktive+yayinla (gorunmezlik penceresini kapatir).
 # Flow asenkron tetiklenir -> once kisa bekleme. Gorselsizlere DOKUNMAZ (Flow onlari zaten geri ceker + kirik gorunur).
