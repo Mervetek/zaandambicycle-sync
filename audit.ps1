@@ -10,7 +10,7 @@ $h = @{ "X-Shopify-Access-Token" = $token }
 # ---------- 1) SHOPIFY mevcut durum ----------
 $store = @{}
 foreach ($st in 'active','draft') {
-    $url = "https://$shop/admin/api/$api/products.json?limit=250&status=$st&fields=id,title,status,tags,variants"
+    $url = "https://$shop/admin/api/$api/products.json?limit=250&status=$st&fields=id,title,status,tags,variants,images"
     while ($url) {
         $resp = Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
         foreach ($p in (($resp.Content | ConvertFrom-Json).products)) {
@@ -18,7 +18,7 @@ foreach ($st in 'active','draft') {
             foreach ($v in @($p.variants)) {
                 $s = "$($v.sku)".Trim()
                 if ($s -and -not $store.ContainsKey($s)) {
-                    $store[$s] = [PSCustomObject]@{ id = $p.id; title = $p.title; status = $p.status; qty = [int]$v.inventory_quantity; price = [double]$v.price; tags = $p.tags; barcode = "$($v.barcode)".Trim() }
+                    $store[$s] = [PSCustomObject]@{ id = $p.id; title = $p.title; status = $p.status; qty = [int]$v.inventory_quantity; price = [double]$v.price; tags = $p.tags; barcode = "$($v.barcode)".Trim(); hasImg = (@($p.images).Count -gt 0) }
                 }
             }
         }
@@ -93,8 +93,9 @@ foreach ($sku in $store.Keys) {
     if ($sp.qty -ne $expQty) {
         [void]$mismatch.Add([PSCustomObject]@{ sku = $sku; urun = $sp.title; alan = 'stok_adedi'; shopify = $sp.qty; beklenen = $expQty })
     }
-    # b) durum: fiyatli her urun yayinda (stoksuz = qty 0, gorunur ama satin alinamaz) - politika 2026-07-05
-    $expStatus = if ($sp.price -gt 0) { 'active' } else { 'draft' }
+    # b) durum: fiyatli VE GORSELLI urun yayinda (stoksuz = qty 0, gorunur ama satin alinamaz) - politika 2026-07-05
+    # taslak sadece fiyatsiz VEYA gorselsizler (gorselsizleri Flow #2 zaten taslakta tutar); gorsel kontrolu 2026-07-30 eklendi
+    $expStatus = if ($sp.price -gt 0 -and $sp.hasImg) { 'active' } else { 'draft' }
     if ($sp.status -ne $expStatus) {
         [void]$mismatch.Add([PSCustomObject]@{ sku = $sku; urun = $sp.title; alan = 'durum'; shopify = $sp.status; beklenen = $expStatus })
     }
