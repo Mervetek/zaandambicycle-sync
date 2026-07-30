@@ -105,6 +105,12 @@ if ($newKb.Count) {
     }
     L "kruitbosch import: $ok yeni urun"
 }
+# --- KB attribute dosyasini tazele (build_electric_specs Cortina elektrik verisi icin kullanir) ---
+# IncludeAttributes=true ile tam attribute'lu katalog; yeni Cortina modelleri de kapsansin (2026-07-30).
+try {
+    $kpAttr = Invoke-RestMethod -Method Get -Uri "https://webservice.kruitbosch.nl/json/reply/Products?IsBike=true&ExcludeBlocked=true&IncludeAttributes=true&IncludeAdditionalImages=false&IncludeOriginalImages=false&IncludeInActive=false" -Headers $kh -TimeoutSec 300
+    if (@($kpAttr.Products).Count -gt 100) { [IO.File]::WriteAllText("$dataDir\kruitbosch_products_attrs.json", (@($kpAttr.Products) | ConvertTo-Json -Depth 6 -Compress), [Text.UTF8Encoding]::new($false)); L "KB attrs tazelendi: $(@($kpAttr.Products).Count)" }
+} catch { L "KB ATTRS TAZELEME HATA: $($_.Exception.Message)" }
 # --- ELEKTRIK KOMPONENT + ek genel metafield'lari (Accell specs + KB attrs) - tablodan ONCE ---
 # specs.el_components + spec_voorvork/verlichting/slot/drager/standaard yazar (musteri istegi 2026-07-30).
 try {
