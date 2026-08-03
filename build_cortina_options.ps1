@@ -51,7 +51,7 @@ while ($url) {
     foreach ($p in (($resp.Content | ConvertFrom-Json).products)) {
         foreach ($v in $p.variants) { $s2 = "$($v.sku)".Trim(); if ($s2 -and -not $vid.ContainsKey($s2)) { $vid[$s2] = "$($v.id)" } }
     }
-    $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+    $url = $null; $lnk = "$($resp.Headers['Link'])"; if ($lnk -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }   # pwsh7 Link dizi-fix
     Start-Sleep -Milliseconds 300
 }
 $eksikVid = @($ccodes | Where-Object { -not $vid.ContainsKey($_) })

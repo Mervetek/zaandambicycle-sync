@@ -1,4 +1,4 @@
-﻿# BAGIMSIZ DENETIM (salt okunur - hicbir sey degistirmez)
+# BAGIMSIZ DENETIM (salt okunur - hicbir sey degistirmez)
 # Taze tedarikci verisini ceker, Shopify'in MEVCUT durumuyla alan alan karsilastirir.
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
@@ -23,7 +23,7 @@ foreach ($st in 'active','draft') {
             }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

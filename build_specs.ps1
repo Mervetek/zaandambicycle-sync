@@ -1,4 +1,4 @@
-﻿# 863 urune eski urunlerle ayni sadelikte specs.* teknik tablo metafieldlarini yazar
+# 863 urune eski urunlerle ayni sadelikte specs.* teknik tablo metafieldlarini yazar
 # Kaynak: Kruitbosch Attributes (kruitbosch_products_attrs.json) + Accell articles/{code} specs
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
@@ -23,7 +23,7 @@ foreach ($st in 'active','draft') {
             if ($s -and -not $skuProd.ContainsKey($s)) { $skuProd[$s] = @{ id = $p.id; ebike = ($p.tags -match 'E-Bikes') } }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

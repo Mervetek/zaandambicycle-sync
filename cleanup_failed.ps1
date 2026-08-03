@@ -15,7 +15,7 @@ foreach ($st in 'draft','active') {
         $resp = Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
         (($resp.Content | ConvertFrom-Json).products) | ForEach-Object { [void]$ids.Add($_.id) }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 500
     }
 }

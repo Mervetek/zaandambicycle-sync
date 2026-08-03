@@ -1,4 +1,4 @@
-﻿# SALT-OKUNUR: aktif bisiklet fiyatlarini GUNCEL tedarikci advies'i ile karsilastirir.
+# SALT-OKUNUR: aktif bisiklet fiyatlarini GUNCEL tedarikci advies'i ile karsilastirir.
 # daily_sync fiyata dokunmadigi icin import-zamani fiyatlar bayatlayabilir (2026-07-07: CECOMM50L1002 2511 vs advies 2561).
 # Sadece rapor; hicbir sey degistirmez. Aksesuar/aku urunlerini (Accu's en Laders) haric tutar.
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
@@ -15,7 +15,7 @@ while ($url) {
         if ("$($p.tags)" -match "Accu's en Laders") { continue }
         foreach ($v in @($p.variants)) { $s = "$($v.sku)".Trim(); if ($s -and -not $store.ContainsKey($s)) { $store[$s] = @{ title = $p.title; price = [double]$v.price } } }
     }
-    $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+    $url = $null; if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
     Start-Sleep -Milliseconds 300
 }
 Write-Output "shopify aktif varyant: $($store.Count)"

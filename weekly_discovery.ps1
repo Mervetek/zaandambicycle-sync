@@ -1,4 +1,4 @@
-﻿# HAFTALIK MODEL KESFI: iki tedarikcide magazada olmayan yeni modelleri bulur ve tam donanimla ekler
+# HAFTALIK MODEL KESFI: iki tedarikcide magazada olmayan yeni modelleri bulur ve tam donanimla ekler
 # 1) Kruitbosch: tam katalog cagrisiyla yeni ProductCode tespiti -> import (kruitbosch tarafi)
 # 2) Accell: kartopu terim taramasi -> yeni kod tespiti -> import_new_accell.ps1 ile ayni akis
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
@@ -20,7 +20,7 @@ foreach ($st in 'active','draft','archived') {
     while ($url) {
         $resp = Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
         foreach ($p in (($resp.Content | ConvertFrom-Json).products)) { foreach ($v in $p.variants) { $s = "$($v.sku)".Trim(); if ($s) { [void]$existing.Add($s) } } }
-        $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        $url = $null; if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

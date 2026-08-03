@@ -1,4 +1,4 @@
-﻿# SALT OKUNUR KESIF (adim 2): Cortina aku/lader secenekleri icin veri toplar
+# SALT OKUNUR KESIF (adim 2): Cortina aku/lader secenekleri icin veri toplar
 # Girdi: data\cortina_battery_map.csv (eski site kesfi: bisiklet SKU -> C-kod aku/lader setleri)
 # Cikti: data\cortina_secici_plan.csv + data\kruitbosch_ccode_katalog.csv (fiyat/stok/EAN)
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
@@ -74,7 +74,7 @@ foreach ($st in 'active','draft') {
             $s2 = "$($p.variants[0].sku)".Trim()
             if ($s2 -and -not $storeSkus.ContainsKey($s2)) { $storeSkus[$s2] = [PSCustomObject]@{ id = $p.id; title = $p.title; status = $p.status } }
         }
-        $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        $url = $null; if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 350
     }
 }

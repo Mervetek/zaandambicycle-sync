@@ -1,4 +1,4 @@
-﻿# Eski sitenin kategori yapisini Shopify'a tasir:
+# Eski sitenin kategori yapisini Shopify'a tasir:
 # 1) SKU -> eski site kategorileri eslemesi  2) urunlere etiket+marka yaz  3) ayni isimlerle akilli koleksiyonlar kur
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
@@ -87,7 +87,7 @@ foreach ($st in 'active','draft') {
             }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Write-Host "guncellenen: $updated | haritasiz: $skipped"
     }
 }

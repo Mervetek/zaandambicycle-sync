@@ -1,4 +1,4 @@
-﻿# Aku/sarj secici fiyatlarini tedarikci TUKETICI fiyatina (Consumentenprijs/advies) esitler
+# Aku/sarj secici fiyatlarini tedarikci TUKETICI fiyatina (Consumentenprijs/advies) esitler
 # 1) Eski site: "Kies een accu/lader" varyasyonlari  2) Shopify: aku urunleri
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
@@ -81,7 +81,7 @@ foreach ($st in 'active','draft') {
             }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

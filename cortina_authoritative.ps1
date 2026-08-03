@@ -1,4 +1,4 @@
-﻿# Cortina akü/şarj - OTORİTER kurulum (portal samenstellen ekranlarindan dogrulanan kural).
+# Cortina akü/şarj - OTORİTER kurulum (portal samenstellen ekranlarindan dogrulanan kural).
 # Kural: motor markasi (SD/Bosch) x akü konumu (tasiyici/entegre). Ekranlarla teyitli 3 aile:
 #   SD+tasiyici    -> CSDACCU300/400/500      + CSDLADER2A/4A
 #   SD+entegre     -> CSDACCUDT400/500        + CSDLADER2A/4A
@@ -33,7 +33,7 @@ $vids=@{}
 $url="https://$shop/admin/api/$api/products.json?limit=250&collection_id=707890479491&fields=id,variants"
 while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
   foreach($p in (($resp.Content|ConvertFrom-Json).products)){ foreach($v in $p.variants){ $s="$($v.sku)".Trim(); if($s){$vids[$s]=1} } }
-  $url=$null; if($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
+  $url=$null; if(("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
 
 # --- eksik aksesuar urunlerini olustur ---
 $tagAcc="Accu's en Laders"
@@ -79,7 +79,7 @@ $prods=@()
 $url="https://$shop/admin/api/$api/products.json?limit=250&status=active&vendor=Cortina&fields=id,variants"
 while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
   foreach($p in (($resp.Content|ConvertFrom-Json).products)){ $s0="$(@($p.variants)[0].sku)".Trim(); if($s0 -cmatch '^CE'){ $prods += ,@($p.variants | ForEach-Object { "$($_.sku)".Trim() }) } }
-  $url=$null; if($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
+  $url=$null; if(("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
 
 $rows=@(); $defer=0
 foreach($skus in $prods){

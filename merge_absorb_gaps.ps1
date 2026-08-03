@@ -61,7 +61,7 @@ foreach ($st in 'active','draft') {
     while ($url) {
         $resp = Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
         $store += @(($resp.Content | ConvertFrom-Json).products)
-        $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        $url = $null; if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 300
     }
 }

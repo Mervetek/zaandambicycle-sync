@@ -1,4 +1,4 @@
-﻿# Xtra temasinin bekledigi specs.battery_options / charger_options metafieldlarini yeni urunlere kurar
+# Xtra temasinin bekledigi specs.battery_options / charger_options metafieldlarini yeni urunlere kurar
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
@@ -36,7 +36,7 @@ foreach ($st in 'active','draft') {
             foreach ($v in $p.variants) { $s = "$($v.sku)".Trim(); if ($s -and -not $skuMap.ContainsKey($s)) { $skuMap[$s] = @{ pid = $p.id; vid = $v.id } } }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

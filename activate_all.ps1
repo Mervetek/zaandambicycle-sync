@@ -1,4 +1,4 @@
-﻿# POLITIKA 2026-07-05: stoksuzlar dahil, fiyati VE gorseli olan tum taslak urunleri yayina alir.
+# POLITIKA 2026-07-05: stoksuzlar dahil, fiyati VE gorseli olan tum taslak urunleri yayina alir.
 # (Gorselsizler taslakta kalir - magazadaki Flow otomasyonu onlari zaten geri cevirir.)
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
@@ -16,7 +16,7 @@ while ($url) {
         if ($price -gt 0 -and $hasImg) { $targets += $p.id }
     }
     $url = $null
-    if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+    if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
     Start-Sleep -Milliseconds 400
 }
 Write-Host "yayina alinacak taslak: $($targets.Count)"

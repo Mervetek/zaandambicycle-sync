@@ -1,4 +1,4 @@
-﻿# Bosch+entegre E-COMMON bisikletleri (11) - portal 2 ekranla teyitli DIKEY (N) akü.
+# Bosch+entegre E-COMMON bisikletleri (11) - portal 2 ekranla teyitli DIKEY (N) akü.
 # CBO3ACCUDT500N/625N urunlerini olusturur, katalog+plana ekler. E-U4 Next ERTELENDI (yon teyitsiz).
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
@@ -20,7 +20,7 @@ $stok=@{}; foreach($s in @($rs.StocksAndPrices)){ $stok["$($s.ProductCode)".Trim
 
 # mevcut variant sku set
 $have=@{}; $url="https://$shop/admin/api/$api/products.json?limit=250&collection_id=707890479491&fields=id,variants"
-while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ foreach($v in $p.variants){ $s="$($v.sku)".Trim(); if($s){$have[$s]=1} } }; $url=$null; if($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
+while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ foreach($v in $p.variants){ $s="$($v.sku)".Trim(); if($s){$have[$s]=1} } }; $url=$null; if(("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
 
 foreach($c in $need){
   if($have.ContainsKey($c)){ Write-Host ("zaten var: "+$c); continue }
@@ -42,7 +42,7 @@ $arr=@((ConvertFrom-Json -InputObject (Get-Content "$d\kruitbosch_products_attrs
 $byCode=@{}; foreach($p in $arr){ $m=@{}; @($p.Attributes|ForEach-Object{$_})|ForEach-Object{$m[$_.Attribute]=$_.AttributeValue}; $byCode["$($p.ProductCode)".Trim()]=@{desc=$p.Description;loc="$($m['Accu locatie'])"} }
 function StripDia([string]$s){ if(-not $s){return $s}; $n=$s.Normalize([Text.NormalizationForm]::FormD); return (-join ($n.ToCharArray()|Where-Object{[Globalization.CharUnicodeInfo]::GetUnicodeCategory($_) -ne 'NonSpacingMark'})) }
 $prods=@(); $url="https://$shop/admin/api/$api/products.json?limit=250&status=active&vendor=Cortina&fields=variants"
-while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ $s0="$(@($p.variants)[0].sku)".Trim(); if($s0 -cmatch '^CE'){ $prods+=,@($p.variants|ForEach-Object{"$($_.sku)".Trim()}) } }; $url=$null; if($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
+while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ $s0="$(@($p.variants)[0].sku)".Trim(); if($s0 -cmatch '^CE'){ $prods+=,@($p.variants|ForEach-Object{"$($_.sku)".Trim()}) } }; $url=$null; if(("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
 $rows=@()
 foreach($skus in $prods){
   $rep=@($skus|Where-Object{$byCode.ContainsKey($_)}|Select-Object -First 1); if(-not $rep){continue}

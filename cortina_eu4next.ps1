@@ -1,4 +1,4 @@
-﻿# E-U4 Next (Bosch entegre, 11) plana ekler. Kanit: tum Bosch-entegre portal ekranlari dikey(N),
+# E-U4 Next (Bosch entegre, 11) plana ekler. Kanit: tum Bosch-entegre portal ekranlari dikey(N),
 # E-U4 Next attribute profili E-Common ile ayni (Bosch Powertube entegre Smart System) - ayni N akü.
 # Urunler (CBO3ACCUDT500N/625N, CBOLADER2ALOS/4ALOS) zaten mevcut; sadece plan + build_cortina.
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
@@ -12,7 +12,7 @@ $arr=@((ConvertFrom-Json -InputObject (Get-Content "$d\kruitbosch_products_attrs
 $byCode=@{}; foreach($p in $arr){ $m=@{}; @($p.Attributes|ForEach-Object{$_})|ForEach-Object{$m[$_.Attribute]=$_.AttributeValue}; $byCode["$($p.ProductCode)".Trim()]=@{desc=$p.Description;loc="$($m['Accu locatie'])"} }
 function StripDia([string]$s){ if(-not $s){return $s}; $n=$s.Normalize([Text.NormalizationForm]::FormD); return (-join ($n.ToCharArray()|Where-Object{[Globalization.CharUnicodeInfo]::GetUnicodeCategory($_) -ne 'NonSpacingMark'})) }
 $prods=@(); $url="https://$shop/admin/api/$api/products.json?limit=250&status=active&vendor=Cortina&fields=variants"
-while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ $s0="$(@($p.variants)[0].sku)".Trim(); if($s0 -cmatch '^CE'){ $prods+=,@($p.variants|ForEach-Object{"$($_.sku)".Trim()}) } }; $url=$null; if($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
+while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ $s0="$(@($p.variants)[0].sku)".Trim(); if($s0 -cmatch '^CE'){ $prods+=,@($p.variants|ForEach-Object{"$($_.sku)".Trim()}) } }; $url=$null; if(("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
 $rows=@()
 foreach($skus in $prods){
   $rep=@($skus|Where-Object{$byCode.ContainsKey($_)}|Select-Object -First 1); if(-not $rep){continue}

@@ -80,7 +80,9 @@ try {
             $resp = Invoke-WebRequest -Uri $url -Headers $shEarly -UseBasicParsing -TimeoutSec 60
             foreach ($p in (($resp.Content | ConvertFrom-Json).products)) { foreach ($v in $p.variants) { $s = "$($v.sku)".Trim(); if ($s) { $storeSkus += $s } } }
             $url = $null
-            if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+            # pwsh 7 (bulut) .Headers['Link'] DIZI doner -> -match dizide $Matches'i DOLDURMAZ, sayfalama bozulur
+            # (bulut 316/777 urun okuyordu!). String'e cevirince hem 5.1 hem 7'de $Matches dogru dolar.
+            $lnk = "$($resp.Headers['Link'])"; if ($lnk -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
             Start-Sleep -Milliseconds 300
         }
     }
@@ -182,7 +184,9 @@ try {
                 $store += [PSCustomObject]@{ product_id = $p.id; status = $p.status; tags = "$($p.tags)"; variants = $vlist }
             }
             $url = $null
-            if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+            # pwsh 7 (bulut) .Headers['Link'] DIZI doner -> -match dizide $Matches'i DOLDURMAZ, sayfalama bozulur
+            # (bulut 316/777 urun okuyordu!). String'e cevirince hem 5.1 hem 7'de $Matches dogru dolar.
+            $lnk = "$($resp.Headers['Link'])"; if ($lnk -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
             Start-Sleep -Milliseconds 400
         }
     }

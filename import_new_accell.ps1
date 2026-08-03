@@ -1,4 +1,4 @@
-﻿# Kesifte bulunan yeni Accell kodlarini Shopify'a tam donanimla aktarir:
+# Kesifte bulunan yeni Accell kodlarini Shopify'a tam donanimla aktarir:
 # urun + stok + advies fiyat + gorseller + specs tablo + aku baglantilari. Idempotent (done-log).
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
@@ -40,7 +40,7 @@ foreach ($st in 'active','draft') {
     while ($url) {
         $resp = Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60
         foreach ($p in (($resp.Content | ConvertFrom-Json).products)) { foreach ($v in $p.variants) { $s = "$($v.sku)".Trim(); if ($s) { $laderV[$s] = @{ pid = $p.id; vid = $v.id } } } }
-        $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        $url = $null; if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

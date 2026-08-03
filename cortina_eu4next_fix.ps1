@@ -1,4 +1,4 @@
-﻿# DUZELTME: E-U4 Next portal ekrani YATAY (HN) akü gosteriyor (CBO3ACCUDT500HN/625HN),
+# DUZELTME: E-U4 Next portal ekrani YATAY (HN) akü gosteriyor (CBO3ACCUDT500HN/625HN),
 # dikey (N) DEGIL. Onceki dikey atama yanlisti. HN urunlerini olustur, E-U4 Next plan satirlarini HN'e cevir.
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12
@@ -18,7 +18,7 @@ $need=@('CBO3ACCUDT500HN','CBO3ACCUDT625HN')
 $rs=Invoke-RestMethod -Uri "https://webservice.kruitbosch.nl/json/reply/StocksAndPrices?CustomerNumber=$($env:KRUITBOSCH_CUSTOMER)&Products=$($need -join ',')&OmmitOutOfStock=false" -Headers $kh -TimeoutSec 60
 $stok=@{}; foreach($s in @($rs.StocksAndPrices)){ $stok["$($s.ProductCode)".Trim()]=[int]$s.AvailabilityId }
 $have=@{}; $url="https://$shop/admin/api/$api/products.json?limit=250&collection_id=707890479491&fields=variants"
-while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ foreach($v in $p.variants){ $s="$($v.sku)".Trim(); if($s){$have[$s]=1} } }; $url=$null; if($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
+while($url){ $resp=Invoke-WebRequest -Uri $url -Headers $h -UseBasicParsing -TimeoutSec 60; foreach($p in (($resp.Content|ConvertFrom-Json).products)){ foreach($v in $p.variants){ $s="$($v.sku)".Trim(); if($s){$have[$s]=1} } }; $url=$null; if(("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"'){$url=$Matches[1]}; Start-Sleep -Milliseconds 300 }
 foreach($c in $need){
   if($have.ContainsKey($c)){ Write-Host ("zaten var: "+$c); continue }
   $i=$accInfo[$c]; if(-not $i){ Write-Host ("KB info yok: "+$c); continue }

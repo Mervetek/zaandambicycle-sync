@@ -1,4 +1,4 @@
-﻿# Kruitbosch 'Elektrisch=Ja/Nee' alanina gore E-Bikes etiketini KESIN olarak duzeltir
+# Kruitbosch 'Elektrisch=Ja/Nee' alanina gore E-Bikes etiketini KESIN olarak duzeltir
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
 $dataDir = Join-Path $env:USERPROFILE "Desktop\claude\ZaandamBicycle\data"
 $shop = "8t0pzm-g1.myshopify.com"; $api = "2024-10"
@@ -55,7 +55,7 @@ foreach ($st in 'active','draft') {
             }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 400
     }
 }

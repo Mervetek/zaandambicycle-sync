@@ -22,7 +22,7 @@ while ($url) {
         if ($priced -and $hasImg) { [void]$targets.Add([PSCustomObject]@{ id = $p.id; title = $p.title }) }
     }
     $url = $null
-    if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+    $lnk = "$($resp.Headers['Link'])"; if ($lnk -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }   # pwsh7 Link dizi-fix
     Start-Sleep -Milliseconds 300
 }
 Write-Output "gorselli fiyatli taslak: $($targets.Count)"

@@ -61,7 +61,7 @@ foreach ($st in 'active','draft') {
             foreach ($v in $p.variants) { $s = "$($v.sku)".Trim(); if ($s -and -not $skuMap.ContainsKey($s)) { $skuMap[$s] = $p.id } }
         }
         $url = $null
-        if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+        if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
         Start-Sleep -Milliseconds 500
     }
 }

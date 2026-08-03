@@ -1,4 +1,4 @@
-﻿# Cortina e-bike seçici kapsamini genisletir: eski-site planinda OLMAYAN aktif Cortina e-bike'lara
+# Cortina e-bike seçici kapsamini genisletir: eski-site planinda OLMAYAN aktif Cortina e-bike'lara
 # motor sistemi + akü konumu KURALIYLA akü/lader setini atar ve cortina_secici_plan.csv'ye ekler.
 # Kural, mevcut 40 bilinen eslemenin birebir oruntusu (tahmin degil). Sonra build_cortina_options.ps1 kosulur.
 if (-not $env:SHOPIFY_CLIENT_SECRET) { . (Join-Path $PSScriptRoot "_load_env.ps1") }
@@ -39,7 +39,7 @@ while ($url) {
         $sku0 = "$(@($p.variants)[0].sku)".Trim()
         if ($sku0 -cmatch '^CE') { $prods += [PSCustomObject]@{ title=$p.title; skus=@($p.variants | ForEach-Object { "$($_.sku)".Trim() }) } }
     }
-    $url = $null; if ($resp.Headers['Link'] -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
+    $url = $null; if (("$($resp.Headers['Link'])") -match '<([^>]+)>;\s*rel="next"') { $url = $Matches[1] }
     Start-Sleep -Milliseconds 300
 }
 Write-Host ("aktif Cortina e-bike urun: " + $prods.Count)
