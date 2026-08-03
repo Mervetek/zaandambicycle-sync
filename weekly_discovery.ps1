@@ -122,4 +122,9 @@ try {
 try {
     & (Join-Path $baseDir "build_spec_tables.ps1") -Quiet | ForEach-Object { L "spec-tablo: $_" }
 } catch { L "SPEC TABLO HATA: $($_.Exception.Message)" }
+# --- EKSIK RESIMLERI TAMAMLA (KB OriginalImages -> base64 yukleme; musteri istegi 2026-07-31) ---
+# Tek-resimli KB bisikletlerine ek goruntuleri ekler. Idempotent (cok-resimli olanlari atlar).
+try {
+    & (Join-Path $baseDir "enrich_images.ps1") -Quiet | ForEach-Object { L "resim: $_" }
+} catch { L "RESIM ZENGINLESTIRME HATA: $($_.Exception.Message)" }
 L "haftalik kesif bitti"
