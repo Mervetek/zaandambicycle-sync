@@ -1,0 +1,173 @@
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main-product": {
+      "type": "main-product",
+      "blocks": {
+        "c7259cb9-7235-4028-b6df-3a68077fed80": {
+          "type": "title",
+          "settings": {
+            "layout": "title-right",
+            "title_size": "h2",
+            "title": "",
+            "show_vendor_brand": false,
+            "show_vendor_name": true,
+            "show_product_rating": true,
+            "share_whatsapp": true,
+            "share_facebook": true,
+            "share_twitter": true,
+            "share_pinterest": true,
+            "share_messenger": true,
+            "share_email": true,
+            "layout_mobile": "title-top"
+          }
+        },
+        "codes": {
+          "type": "codes",
+          "settings": {
+            "show_sku": true,
+            "show_barcode": true
+          }
+        },
+        "short_description": {
+          "type": "short_description",
+          "settings": {
+            "show_read_more": true
+          }
+        },
+        "custom_liquid_KULMdX": {
+          "type": "custom_liquid",
+          "settings": {
+            "custom_liquid": "{%- comment -%}\n  ACCU secici (QWIC sablonu, v2 2026-10-31).\n  - battery_options metafield'den okur\n  - capacity_wh=0 -> Zonder Accu\n  - included=true -> Inbegrepen (fiyata dahil)\n  - included=false + variant_id -> sepete aku upgrade eklenir\n{%- endcomment -%}\n{%- assign batts = product.metafields.specs.battery_options.value -%}\n{%- if batts.size > 0 -%}\n  <div class=\"bc-selector\" data-base=\"{{ product.price }}\" style=\"margin:16px 0;\">\n    <label style=\"display:block;font-weight:600;margin-bottom:8px;\">Selecteer batterij</label>\n    <div style=\"display:flex;flex-direction:column;gap:8px;\">\n      {%- assign firstsel = false -%}\n      {%- for b in batts -%}\n        {%- if b.capacity_wh == 0 -%}\n          <label style=\"display:flex;align-items:center;gap:10px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;cursor:pointer;\">\n            <input type=\"radio\" name=\"battery-opt\" value=\"\" data-price=\"0\" data-label=\"Zonder Accu\" {% if firstsel == false %}checked{% assign firstsel = true %}{% endif %}>\n            <span style=\"font-weight:600;\">Zonder Accu</span>\n          </label>\n        {%- elsif b.available == false -%}\n          <label style=\"display:flex;align-items:center;gap:10px;border:1px dashed #d1d5db;border-radius:6px;padding:10px 14px;cursor:not-allowed;opacity:.6;background:#f9fafb;\">\n            <input type=\"radio\" name=\"battery-opt\" disabled>\n            <span style=\"font-weight:600;color:#6b7280;\">{{ b.capacity_wh }}Wh</span>\n            <span style=\"margin-left:auto;color:#b45309;font-weight:600;font-size:.92em;\">Tijdelijk uitverkocht</span>\n          </label>\n        {%- elsif b.included -%}\n          <label style=\"display:flex;align-items:center;gap:10px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;cursor:pointer;\">\n            <input type=\"radio\" name=\"battery-opt\" value=\"\" data-price=\"0\" data-label=\"{{ b.capacity_wh }}Wh (inbegrepen)\" {% if firstsel == false %}checked{% assign firstsel = true %}{% endif %}>\n            <span style=\"font-weight:600;\">{{ b.capacity_wh }}Wh</span>\n            <span style=\"margin-left:auto;color:#0a7d28;font-weight:600;\">Inbegrepen</span>\n          </label>\n        {%- else -%}\n          <label style=\"display:flex;align-items:center;gap:10px;border:1px solid #ccc;border-radius:6px;padding:10px 14px;cursor:pointer;\">\n            <input type=\"radio\" name=\"battery-opt\" value=\"{{ b.variant_id }}\" data-price=\"{{ b.additional_cost }}\" data-label=\"{{ b.capacity_wh }}Wh (+ {{ b.additional_cost | times: 100 | money }})\" {% if firstsel == false %}checked{% assign firstsel = true %}{% endif %}>\n            <span style=\"font-weight:600;\">{{ b.capacity_wh }}Wh</span>\n            <span style=\"margin-left:auto;color:#0a7d28;font-weight:600;\">+ {{ b.additional_cost | times: 100 | money }}</span>\n          </label>\n        {%- endif -%}\n      {%- endfor -%}\n    </div>\n    <div style=\"margin-top:12px;font-size:1.1em;font-weight:700;\">\n      Totaal: <span class=\"bc-total\">{{ product.price | money }}</span>\n    </div>\n  </div>\n  <script>\n  (function(){\n    var box = document.querySelector('.bc-selector');\n    if(!box) return;\n    var base = parseInt(box.getAttribute('data-base'),10) || 0;\n    var totalEl = box.querySelector('.bc-total');\n    function fmt(c){ return '\\u20ac ' + (c/100).toLocaleString('nl-NL',{minimumFractionDigits:2,maximumFractionDigits:2}); }\n    function bsel(){ return box.querySelector('input[name=\"battery-opt\"]:checked'); }\n    function calc(){\n      var bc = bsel() ? (parseFloat(bsel().getAttribute('data-price'))||0) : 0;\n      totalEl.textContent = fmt(base + Math.round(bc*100));\n    }\n    box.querySelectorAll('input[name=\"battery-opt\"]').forEach(function(r){ r.addEventListener('change', calc); });\n    calc();\n    var mainVariants = {{ product.variants | map: 'id' | json }};\n    function isMainForm(form){\n      if(!form) return false;\n      var idi = form.querySelector('[name=\"id\"]');\n      return !!(idi && mainVariants.indexOf(parseInt(idi.value,10)) >= 0);\n    }\n    var busy = false;\n    function addToCart(form){\n      if(busy) return; busy = true;\n      var idInput = form.querySelector('[name=\"id\"]');\n      var qEl = form.querySelector('[name=\"quantity\"]') || document.querySelector('input[name=\"quantity\"]');\n      var qty = parseInt((qEl||{}).value,10) || 1;\n      var items = [];\n      var br = bsel();\n      items.push({ id: parseInt(idInput.value,10), quantity: qty, properties: br ? {\"Accu\": br.getAttribute('data-label')} : {} });\n      if(br && br.value){\n        items.push({ id: parseInt(br.value,10), quantity: qty, properties: {\"Accu voor\": {{ product.title | json }} } });\n      }\n      fetch('/cart/add.js', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items:items}) })\n        .then(function(res){ if(!res.ok) throw 0; window.location = '/cart'; })\n        .catch(function(){ busy=false; alert('Kon niet toevoegen aan winkelwagen. Probeer het opnieuw of neem contact op.'); });\n    }\n    document.addEventListener('submit', function(ev){\n      var form = ev.target;\n      if(!form || !form.getAttribute) return;\n      if(String(form.getAttribute('action')||'').indexOf('/cart/add') < 0) return;\n      if(!isMainForm(form)) return;\n      ev.preventDefault(); ev.stopImmediatePropagation();\n      addToCart(form);\n    }, true);\n    document.addEventListener('click', function(ev){\n      var btn = ev.target.closest('button[type=\"submit\"], [name=\"add\"]');\n      if(!btn) return;\n      var form = btn.closest('form');\n      if(!form){ var fid = btn.getAttribute('form'); if(fid) form = document.getElementById(fid); }\n      if(!form || String(form.getAttribute('action')||'').indexOf('/cart/add') < 0) return;\n      if(!isMainForm(form)) return;\n      ev.preventDefault(); ev.stopImmediatePropagation();\n      addToCart(form);\n    }, true);\n  })();\n  </script>\n{%- endif -%}"
+          }
+        },
+        "variant_selection": {
+          "type": "variant_selection",
+          "settings": {
+            "selection_type": "buttons",
+            "options": false,
+            "show_variant_images": true,
+            "show_unavailable_variants": true,
+            "show_single_options": false,
+            "enable_selling_plans": true
+          }
+        },
+        "inventory": {
+          "type": "inventory",
+          "settings": {}
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "show_tax": true
+          }
+        },
+        "buy_button": {
+          "type": "buy_button",
+          "settings": {
+            "button_style": "plain",
+            "show_amount_selection": true,
+            "show_dynamic_buybutton": false,
+            "button_style_dynamic_buybutton": "plain",
+            "preorder": true,
+            "preorder_button_text": "Pre-order",
+            "preorder_label": "<p>Levering binnen 5 - 10 werkdagen</p>",
+            "preorder_label_color_palette": "light_2",
+            "preorder_show_dynamic_buybutton": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "beafbaf1-a0af-4326-b4de-6e78c472249c": {
+          "type": "spacer",
+          "settings": {
+            "height": 20
+          }
+        },
+        "e55f9825-3e08-4f90-bd42-9d336323be89": {
+          "type": "trustbadge",
+          "settings": {}
+        },
+        "e9431daf-3b99-40f6-89ff-dab164cda2ff": {
+          "type": "spacer",
+          "settings": {
+            "height": 15
+          }
+        },
+        "usp_1": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>10%</strong> korting op alle fietsen</p>"
+          }
+        },
+        "usp_2": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p>Ruilen en retourneren binnen <strong>14</strong> dagen, inclusief onze uitgebreide service.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "c7259cb9-7235-4028-b6df-3a68077fed80",
+        "codes",
+        "short_description",
+        "custom_liquid_KULMdX",
+        "variant_selection",
+        "inventory",
+        "price",
+        "buy_button",
+        "beafbaf1-a0af-4326-b4de-6e78c472249c",
+        "e55f9825-3e08-4f90-bd42-9d336323be89",
+        "e9431daf-3b99-40f6-89ff-dab164cda2ff",
+        "usp_1",
+        "usp_2"
+      ],
+      "settings": {
+        "width": "boxed",
+        "show_thumbs_desktop": true,
+        "show_thumbs_mobile": false,
+        "images_layout": "aside",
+        "show_product_description": true,
+        "description_title_size": "h2",
+        "product_description_enable_read_more": false,
+        "pros_cons_title_size": "h2",
+        "pros": "",
+        "cons": "",
+        "specs_title_size": "h2",
+        "specifications": "",
+        "product_description_mobile_collapse": false,
+        "mobile_tabs_title_size": "h4"
+      }
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 6,
+        "number_of_items": 5,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>Misschien vindt u dit ook leuk</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": true,
+        "enable_quick_buy_mobile": true,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 50,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main-product",
+    "recommendations"
+  ]
+}

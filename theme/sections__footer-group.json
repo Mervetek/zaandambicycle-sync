@@ -1,0 +1,56 @@
+{
+  "type": "footer",
+  "name": "t:static_sections.footer.name",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "c9a8027f-3a8d-4084-adbf-29db94608977": {
+          "type": "menu",
+          "settings": {
+            "menu": "footer",
+            "split_menu": false
+          }
+        },
+        "ee8cf9cf-0a8b-4986-b76c-1016a9510c5b": {
+          "type": "customer_support",
+          "settings": {
+            "title": "Customer support",
+            "title_underline_style": "none",
+            "customer_support_img_width": 220,
+            "customer_support_offset_right": 25,
+            "customer_support_offset_bottom": 0,
+            "extra_customer_support": "<p>Available between 10 AM to 6 PM. Ready to  answer your questions.<\/p>",
+            "show_phone_link": true,
+            "show_mail_link": true,
+            "show_whatsapp_link": false,
+            "customer_support_offset_right_mobile": 0,
+            "customer_support_offset_bottom_mobile": 0
+          }
+        }
+      },
+      "block_order": [
+        "c9a8027f-3a8d-4084-adbf-29db94608977",
+        "ee8cf9cf-0a8b-4986-b76c-1016a9510c5b"
+      ],
+      "settings": {
+        "width": "boxed",
+        "footer_color": "scheme-7",
+        "title_font": "primary",
+        "title_size_blocks": "h5",
+        "bottom_color": "scheme-6",
+        "bottom_img_width": 50,
+        "bottom_img_link": "",
+        "enable_country_selector": true,
+        "enable_language_selector": true,
+        "enable_follow_on_shop": false,
+        "show_payment_methods": true,
+        "spacing_desktop": 0,
+        "spacing_mobile": 0
+      }
+    }
+  },
+  "order": [
+    "footer"
+  ]
+}
